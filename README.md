@@ -1,105 +1,92 @@
-# News Crawler - Công cụ thu thập tin tức từ VnExpress và VietnamNet
+# News Crawler API
 
-Đây là công cụ crawl tin tức tự động với giao diện đồ họa, hỗ trợ thu thập dữ liệu từ các trang tin tức tiếng Việt phổ biến bao gồm VnExpress và VietnamNet.
-
-## Tính năng chính
-
-- Thu thập danh sách bài viết theo danh mục
-- Tải chi tiết nội dung bài viết (tiêu đề, tóm tắt, nội dung, ảnh)
-- Giao diện đồ họa trực quan với nhật ký hoạt động
-- Cấu hình số trang và số lượng bài viết cần thu thập
-- Xuất dữ liệu dạng JSON
-- Tự động phân loại theo danh mục
-- Hỗ trợ đa nguồn (VnExpress, VietnamNet)
-
-## Yêu cầu hệ thống
-
-- Python 3.6 trở lên
-- Các thư viện: requests, beautifulsoup4, tkinter
+API để crawl tin tức từ VnExpress và VietnamNet.
 
 ## Cài đặt
 
-1. Clone hoặc tải repository về máy
-2. Cài đặt các thư viện cần thiết:
-
+1. Cài đặt các thư viện cần thiết:
 ```bash
-pip install requests beautifulsoup4
+pip install flask flask-cors requests beautifulsoup4
 ```
 
-## Hướng dẫn sử dụng
-
-1. Chạy chương trình:
-
+2. Chạy API:
 ```bash
-python vnexpress_crawler.py
+python api.py
 ```
 
-2. Giao diện chương trình hiển thị với các tùy chọn sau:
-   - **Nguồn**: Chọn nguồn tin tức (VnExpress hoặc VietnamNet)
-   - **Danh mục**: Chọn danh mục tin tức muốn crawl
-   - **Số trang**: Nhập số trang cần crawl (mặc định: 2)
-   - **Số bài viết**: Nhập số lượng bài viết chi tiết cần crawl (mặc định: 10)
-   - **Thư mục xuất**: Nhập đường dẫn thư mục lưu file JSON (mặc định: news_data)
+API sẽ chạy tại địa chỉ: http://localhost:5000
 
-3. Nhấn "Bắt đầu Crawl" để bắt đầu quá trình thu thập dữ liệu
-4. Theo dõi tiến trình trong khu vực Log
-5. Khi hoàn tất, file JSON sẽ được lưu vào thư mục xuất với tên:
-   `[nguồn]_[danh_mục]_[thời_gian].json`
+## API Endpoints
 
-## Danh mục tin tức
+### 1. Lấy danh sách danh mục
 
-### VnExpress
-- 1: Thời sự
-- 2: Thế giới
-- 3: Kinh doanh
-- 4: Giải trí
-- 5: Thể thao
-- 7: Giáo dục
-- 8: Sức khỏe
-- 9: Đời sống
-- 10: Du lịch
-- 11: Công nghệ
-- 12: Bất động sản
+```
+GET /api/categories
+```
 
-### VietnamNet
-- 1: Thời sự
-- 2: Thế giới
-- 3: Kinh doanh
-- 4: Giải trí
-- 5: Thể thao
-- 7: Giáo dục
-- 8: Sức khỏe
-- 9: Đời sống
-- 10: Du lịch
-- 11: Công nghệ
-- 12: Bất động sản
-- 13: Ô tô - Xe máy
+Query Parameters:
+- `source`: Nguồn tin tức ('vnexpress' hoặc 'vietnamnet', mặc định là 'vnexpress')
 
-## Cấu trúc dữ liệu xuất
+Ví dụ:
+```
+GET /api/categories?source=vnexpress
+```
 
-File JSON chứa danh sách các bài viết, mỗi bài viết có cấu trúc:
-
+Response:
 ```json
 {
-  "title": "Tiêu đề bài viết",
-  "content": "Nội dung HTML của bài viết",
-  "excerpt": "Tóm tắt bài viết",
-  "image": "URL ảnh đại diện",
-  "category": 1,
-  "status": "published"
+    "categories": {
+        "thoi-su": 1,
+        "the-gioi": 2,
+        "kinh-doanh": 3,
+        ...
+    },
+    "category_names": {
+        "1": "Thời sự",
+        "2": "Thế giới",
+        "3": "Kinh doanh",
+        ...
+    }
 }
+```
+
+### 2. Lấy tin tức
+
+```
+GET /api/news
+```
+
+Query Parameters:
+- `source`: Nguồn tin tức ('vnexpress' hoặc 'vietnamnet', mặc định là 'vnexpress')
+- `category_id`: ID của danh mục (bắt buộc)
+- `num_pages`: Số trang muốn crawl (mặc định là 1)
+- `num_articles`: Số bài viết muốn lấy chi tiết (mặc định là 10)
+
+Ví dụ:
+```
+GET /api/news?source=vnexpress&category_id=1&num_pages=2&num_articles=5
+```
+
+Response: Mảng các bài viết với định dạng:
+```json
+[
+    {
+        "title": "Tiêu đề bài viết",
+        "content": "Nội dung đầy đủ của bài viết",
+        "excerpt": "Tóm tắt bài viết",
+        "image": "URL hình ảnh",
+        "category": 1,
+        "status": "published"
+    },
+    ...
+]
 ```
 
 ## Lưu ý
 
-- Thời gian crawl phụ thuộc vào số lượng bài viết và tốc độ mạng
-- Cần tránh crawl quá nhiều dữ liệu trong thời gian ngắn để không gây quá tải cho server
-- Phần mềm chỉ phục vụ mục đích học tập, nghiên cứu
-
-## Phát triển tiếp theo
-
-Để tiếp tục phát triển crawler, bạn có thể mở rộng:
-- Thêm các nguồn tin tức khác
-- Lọc nội dung theo từ khóa
-- Lập lịch tự động crawl
-- Xuất dữ liệu sang các định dạng khác (CSV, XML) 
+- Các file JSON được lưu trong thư mục `news_data`
+- API hỗ trợ CORS, có thể gọi từ bất kỳ domain nào
+- Mỗi lần gọi API sẽ tạo một file JSON mới với timestamp
+- Các danh mục có sẵn:
+  - VnExpress: thoi-su, the-gioi, kinh-doanh, giai-tri, the-thao, phap-luat, giao-duc, suc-khoe, doi-song, du-lich, khoa-hoc-cong-nghe, bat-dong-san
+  - VietnamNet: thoi-su, the-gioi, kinh-doanh, giai-tri, the-thao, giao-duc, suc-khoe, doi-song, du-lich, cong-nghe, bat-dong-san, oto-xe-may 
